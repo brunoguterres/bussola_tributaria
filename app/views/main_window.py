@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QTabWidget
 from app.views.formulario import FormularioProduto
-# IMPORT NOVO: Trazendo a nossa lista de produtos
-from app.views.lista_produtos import ListaProdutos 
+from app.views.lista_produtos import ListaProdutos
+# IMPORT NOVO: Nosso formulário de regras
+from app.views.formulario_regras import FormularioRegras 
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -19,8 +20,11 @@ class MainWindow(QMainWindow):
         aba_produtos = FormularioProduto()
         tabs.addTab(aba_produtos, "Cadastro de Produtos")
         
-        # ABA NOVA: Nossa tabela visual
         aba_lista = ListaProdutos()
         tabs.addTab(aba_lista, "Estoque Cadastrado")
+        
+        # ABA NOVA: Regras Fiscais
+        aba_regras = FormularioRegras()
+        tabs.addTab(aba_regras, "Regras Fiscais (IVA)")
         
         layout.addWidget(tabs)
