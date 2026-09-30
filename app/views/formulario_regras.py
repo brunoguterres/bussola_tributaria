@@ -11,7 +11,6 @@ class FormularioRegras(QWidget):
         
         form_layout = QFormLayout()
         
-        # Campos de texto
         self.input_natureza = QLineEdit()
         self.input_natureza.setPlaceholderText("Ex: Venda de Produto / Serviço")
         
@@ -23,18 +22,16 @@ class FormularioRegras(QWidget):
         self.input_cst_cbs.setPlaceholderText("Ex: 001")
         self.input_cst_cbs.setMaxLength(3)
         
-        # Campos de números decimais para as alíquotas
         self.spin_ibs = QDoubleSpinBox()
         self.spin_ibs.setSuffix(" %")
-        self.spin_ibs.setDecimals(2) # Duas casas decimais
-        self.spin_ibs.setMaximum(100.00) # Limite máximo de 100%
+        self.spin_ibs.setDecimals(2)
+        self.spin_ibs.setMaximum(100.00)
         
         self.spin_cbs = QDoubleSpinBox()
         self.spin_cbs.setSuffix(" %")
         self.spin_cbs.setDecimals(2)
         self.spin_cbs.setMaximum(100.00)
         
-        # Montando o layout
         form_layout.addRow("Natureza da Operação:", self.input_natureza)
         form_layout.addRow("CST IBS:", self.input_cst_ibs)
         form_layout.addRow("Alíquota IBS:", self.spin_ibs)
@@ -74,7 +71,6 @@ class FormularioRegras(QWidget):
             
             db.table("dim_regra_fiscal").insert(dados_regra).execute()
             
-            # Limpa os campos após salvar
             self.input_natureza.clear()
             self.input_cst_ibs.clear()
             self.input_cst_cbs.clear()

@@ -11,13 +11,16 @@ class SimuladorTributario(QWidget):
         layout_principal = QVBoxLayout()
         self.setLayout(layout_principal)
         
-        # --- SEÇÃO 1: Entradas de Dados ---
         grupo_entradas = QGroupBox("1. Seleção de Parâmetros")
         form_entradas = QFormLayout()
         
         self.combo_produto = QComboBox()
         self.combo_parceiro = QComboBox()
         self.combo_regra = QComboBox()
+
+        self.btn_atualizar = QPushButton("↻ Sincronizar Cadastros")
+        self.btn_atualizar.setStyleSheet("background-color: #f39c12; color: white; font-weight: bold; padding: 5px;")
+        self.btn_atualizar.clicked.connect(self.carregar_dados_combos)
         
         self.spin_quantidade = QDoubleSpinBox()
         self.spin_quantidade.setDecimals(2)
@@ -28,7 +31,8 @@ class SimuladorTributario(QWidget):
         self.spin_valor_unitario.setPrefix("R$ ")
         self.spin_valor_unitario.setDecimals(2)
         self.spin_valor_unitario.setMaximum(9999999.99)
-        
+
+        form_entradas.addRow("", self.btn_atualizar)
         form_entradas.addRow("Produto:", self.combo_produto)
         form_entradas.addRow("Parceiro de Negócio:", self.combo_parceiro)
         form_entradas.addRow("Regra Fiscal:", self.combo_regra)
@@ -38,16 +42,14 @@ class SimuladorTributario(QWidget):
         grupo_entradas.setLayout(form_entradas)
         layout_principal.addWidget(grupo_entradas)
         
-        # --- SEÇÃO 2: Resultados e Cálculos ---
         grupo_resultados = QGroupBox("2. Análise de Impacto (IVA Dual)")
         form_resultados = QFormLayout()
         
         self.lbl_valor_total = QLabel("R$ 0.00")
         self.lbl_valor_ibs = QLabel("R$ 0.00")
         self.lbl_valor_cbs = QLabel("R$ 0.00")
-        self.lbl_perda_float = QLabel("R$ 0.00") # Custo da perda de 45 dias de caixa
+        self.lbl_perda_float = QLabel("R$ 0.00")
         
-        # Estilizando os resultados para destaque
         estilo_destaque = "font-weight: bold; color: #c0392b; font-size: 14px;"
         self.lbl_valor_ibs.setStyleSheet(estilo_destaque)
         self.lbl_valor_cbs.setStyleSheet(estilo_destaque)
@@ -61,7 +63,6 @@ class SimuladorTributario(QWidget):
         grupo_resultados.setLayout(form_resultados)
         layout_principal.addWidget(grupo_resultados)
         
-        # --- SEÇÃO 3: Botões de Ação ---
         self.btn_calcular = QPushButton("Simular Impacto Tributário")
         self.btn_calcular.setStyleSheet("background-color: #3498db; color: white; font-weight: bold; padding: 10px;")
         self.btn_calcular.clicked.connect(self.calcular_impostos)
@@ -74,31 +75,31 @@ class SimuladorTributario(QWidget):
         layout_principal.addWidget(self.btn_salvar)
         layout_principal.addStretch()
         
-        # Variáveis internas para guardar os cálculos
         self.calculo_atual = {}
         
         self.carregar_dados_combos()
 
     def carregar_dados_combos(self):
         """Busca os dados do Supabase e preenche as caixas de seleção."""
+
+        self.combo_produto.clear()
+        self.combo_parceiro.clear()
+        self.combo_regra.clear()
+
         try:
             db = get_connection()
             
-            # Produtos
             produtos = db.table("dim_produto").select("sk_produto, descricao").execute().data
             for p in produtos:
                 self.combo_produto.addItem(p["descricao"], userData=p["sk_produto"])
-                
-            # Parceiros
+            
             parceiros = db.table("dim_parceiro").select("sk_parceiro, razao_social").execute().data
             for p in parceiros:
                 self.combo_parceiro.addItem(p["razao_social"], userData=p["sk_parceiro"])
-                
-            # Regras Fiscais
+            
             regras = db.table("dim_regra_fiscal").select("*").execute().data
             for r in regras:
                 texto = f"{r['natureza_operacao']} (IBS: {r['aliquota_ibs']}% | CBS: {r['aliquota_cbs']}%)"
-                # Guardamos a regra inteira no userData para usarmos as alíquotas no cálculo
                 self.combo_regra.addItem(texto, userData=r)
                 
         except Exception as e:
@@ -118,18 +119,14 @@ class SimuladorTributario(QWidget):
         valor_ibs = base_calculo * (float(regra["aliquota_ibs"]) / 100)
         valor_cbs = base_calculo * (float(regra["aliquota_cbs"]) / 100)
         
-        # Cálculo do Float (Split Payment): Assumindo custo de capital de 1.5% ao longo de 45 dias 
-        # sobre o montante retido imediatamente pelo governo.
         imposto_total = valor_ibs + valor_cbs
         custo_float = imposto_total * 0.015 
         
-        # Atualiza as labels na tela
         self.lbl_valor_total.setText(f"R$ {base_calculo:.2f}")
         self.lbl_valor_ibs.setText(f"R$ {valor_ibs:.2f}")
         self.lbl_valor_cbs.setText(f"R$ {valor_cbs:.2f}")
         self.lbl_perda_float.setText(f"R$ {custo_float:.2f}")
         
-        # Guarda na memória para salvar no banco depois
         self.calculo_atual = {
             "sk_produto": self.combo_produto.currentData(),
             "sk_parceiro": self.combo_parceiro.currentData(),
@@ -170,7 +167,6 @@ class SimuladorTributario(QWidget):
             db = get_connection()
             sk_tempo = self.garantir_dim_tempo(db)
             
-            # Adiciona o tempo e um número de nota fiscal fictício
             dados_fato = self.calculo_atual.copy()
             dados_fato["sk_tempo"] = sk_tempo
             dados_fato["numero_nfe"] = f"NFE-SIMULACAO-{datetime.now().strftime('%H%M%S')}"

@@ -1,8 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QFormLayout, QLineEdit, QComboBox, 
                              QPushButton, QVBoxLayout, QMessageBox, QHBoxLayout)
 from app.database.connection import get_connection
-
-# Importamos a função de extração que construímos anteriormente
 from app.etl.receita_api import buscar_dados_cnpj 
 
 class FormularioParceiros(QWidget):
@@ -13,7 +11,6 @@ class FormularioParceiros(QWidget):
         self.setLayout(layout_principal)
         form_layout = QFormLayout()
         
-        # Campo CNPJ com um layout horizontal para colocar o botão de busca ao lado
         layout_cnpj = QHBoxLayout()
         self.input_cnpj = QLineEdit()
         self.input_cnpj.setPlaceholderText("Apenas números (Ex: 34028316000103)")
@@ -25,7 +22,6 @@ class FormularioParceiros(QWidget):
         layout_cnpj.addWidget(self.input_cnpj)
         layout_cnpj.addWidget(self.btn_buscar)
         
-        # Restantes campos da tabela dim_parceiro
         self.input_razao = QLineEdit()
         self.input_cnae = QLineEdit()
         
@@ -35,7 +31,6 @@ class FormularioParceiros(QWidget):
         self.combo_regime = QComboBox()
         self.combo_regime.addItems(["Simples Nacional", "Lucro Presumido", "Lucro Real"])
         
-        # Montagem do formulário
         form_layout.addRow("CNPJ:", layout_cnpj)
         form_layout.addRow("Razão Social:", self.input_razao)
         form_layout.addRow("CNAE Principal:", self.input_cnae)
@@ -57,10 +52,8 @@ class FormularioParceiros(QWidget):
             return
             
         try:
-            # Chama o robô da BrasilAPI
             dados = buscar_dados_cnpj(cnpj)
             
-            # Preenche os campos do ecrã automaticamente
             self.input_razao.setText(dados.get("razao_social", ""))
             self.input_cnae.setText(dados.get("cnae_principal", ""))
             self.input_uf.setText(dados.get("uf", ""))
@@ -90,7 +83,6 @@ class FormularioParceiros(QWidget):
             
             db.table("dim_parceiro").insert(dados_parceiro).execute()
             
-            # Limpa os campos
             self.input_cnpj.clear()
             self.input_razao.clear()
             self.input_cnae.clear()

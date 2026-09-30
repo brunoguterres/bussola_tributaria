@@ -1,8 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QFormLayout, QLineEdit, QComboBox, 
                              QCheckBox, QPushButton, QVBoxLayout, QMessageBox)
 from PyQt6.QtCore import Qt
-
-# IMPORT NOVO: Trazendo a nossa conexão com o Supabase
 from app.database.connection import get_connection
 
 class FormularioProduto(QWidget):
@@ -43,7 +41,6 @@ class FormularioProduto(QWidget):
         self.btn_salvar.clicked.connect(self.salvar_dados)
 
     def salvar_dados(self):
-        # 1. Pegamos os dados da tela
         sku = self.input_sku.text()
         descricao = self.input_descricao.text()
         ncm = self.input_ncm.text()
@@ -55,10 +52,8 @@ class FormularioProduto(QWidget):
             return
             
         try:
-            # 2. Conectamos ao banco de dados
             db = get_connection()
             
-            # 3. Montamos o "pacote" de dados (dicionário) com os nomes exatos das colunas do banco
             dados_produto = {
                 "cod_sku": sku,
                 "descricao": descricao,
@@ -67,10 +62,8 @@ class FormularioProduto(QWidget):
                 "imposto_pecado": pecado
             }
             
-            # 4. Enviamos para a tabela dim_produto
             db.table("dim_produto").insert(dados_produto).execute()
             
-            # 5. Limpamos a tela para o próximo cadastro
             self.input_sku.clear()
             self.input_descricao.clear()
             self.input_ncm.clear()
