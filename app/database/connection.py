@@ -1,8 +1,14 @@
 import os
+import sys
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-load_dotenv()
+if getattr(sys, 'frozen', False):
+    caminho_base = sys._MEIPASS
+else:
+    caminho_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+load_dotenv(os.path.join(caminho_base, '.env'))
 
 def get_connection() -> Client:
     """
@@ -10,10 +16,10 @@ def get_connection() -> Client:
     """
     url: str = os.getenv("SUPABASE_URL")
     key: str = os.getenv("SUPABASE_KEY")
-
+    
     if not url or not key:
         raise ValueError("ERRO: Credenciais do Supabase não encontradas. Verifique o arquivo .env.")
-
+        
     supabase_client: Client = create_client(url, key)
     return supabase_client
 
