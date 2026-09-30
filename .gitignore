@@ -5,3 +5,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Empacotamento PyInstaller
+build/
+dist/
+*.spec
